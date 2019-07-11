@@ -1,0 +1,41 @@
+let state = {counter: 0};
+
+function reducer(state, action) {
+    switch (action.type) {
+        case "up": return {counter: ++state.counter};
+        case "down": return {counter: --state.counter};
+        default: return state;
+    }
+}
+
+function createStore(reducer) {
+    class Store{
+        constructor(){
+            this._subscribes = [];
+        }
+
+        getState(){
+            return state;
+        }
+
+        dispatch(action){
+            state = reducer(state, action);
+            //тут желательно бы подключить lodash isEqual и сравнить state
+            if (this._subscribes.length > 0){
+                this._subscribes.forEach(fn => fn());
+            }
+        }
+
+        subscribe(fn){
+            this._subscribes.push(fn);
+        }
+    }
+    return new Store();
+}
+
+const store = createStore(reducer);
+
+store.subscribe(() => console.log(store.getState()));
+store.dispatch({type: 'up'});
+store.dispatch({type: 'up'});
+store.dispatch({type: 'up'});
